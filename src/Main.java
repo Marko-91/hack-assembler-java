@@ -3,9 +3,31 @@ import java.nio.charset.StandardCharsets;
 
 public class Main {
     public static int lineCount;
-    public static void main(String[] args) throws Exception {
-        Parser parser = new Parser("Add.asm");
+    public static int ROMAddressCount;
+    public static int RAMAddress = 16;
 
+    public static void main(String[] args) throws Exception {
+        Parser labelParser = new Parser("Add.asm");
+        Parser parser = new Parser("Add.asm");
+        SymbolTable symbolTable = new SymbolTable();
+
+        // FIRST PASS
+        while (labelParser.advance()) {
+            if (labelParser.getCurrentCommand().matches("^$|^\\/\\/.*$")) {
+                continue; // Skip comments and empty lines.
+            }
+
+            if (labelParser.commandType().equals("L_COMMAND") && !symbolTable.contains(labelParser.getCurrentCommand())) {
+                String labelToAdd = labelParser.symbol().trim();
+                symbolTable.addEntry(labelToAdd, String.valueOf(ROMAddressCount)); // Associate labels (labelName) with ROM addresses
+                continue; // Do not add labels to rom address count
+            }
+
+            ROMAddressCount++;
+
+        }
+        labelParser.closeReader();
+        // SECOND PASS
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(parser.getFileName() + ".hack"), StandardCharsets.UTF_8))) {
 
@@ -20,6 +42,26 @@ public class Main {
                 switch (parser.commandType()) {
 
                     case "A_COMMAND":
+                        if (symbolTable.contains(parser.getCurrentCommand().trim()) &&
+                                parser.getCurrentCommand().matches("\\s*@([A-Z]|[0-9])\\s*")) {
+
+                            String aCommand = fillInMissingBinaries(
+                                    symbolTable.getAddress(parser.getCurrentCommand().trim()));
+
+                            writer.write(aCommand + "\n");
+
+                        }
+
+                        if (!symbolTable.contains(parser.getCurrentCommand().trim()) &&
+                                parser.getCurrentCommand().matches("\\s*@([A-Z]|[0-9])\\s*")) {
+
+                            symbolTable.addEntry(parser.getCurrentCommand().trim(), String.valueOf(RAMAddress));
+                            parser.setCurrentCommand(symbolTable.getAddress(parser.getCurrentCommand().trim()));
+                            RAMAddress++;
+                            String aCommand = fillInMissingBinaries(parser.symbol());
+                            writer.write(aCommand + "\n");
+                        }
+
 
                         String aCommand = fillInMissingBinaries(parser.symbol());
                         writer.write(aCommand + "\n");
@@ -27,7 +69,7 @@ public class Main {
 
                     case "C_COMMAND":
 
-                        String cCommand = null;
+                        String cCommand;
                         if (parser.comp().contains("M")) { // If a=1 (write=1)
                             cCommand =
                                     "1111" + Code.dest(parser.dest()) + Code.comp(parser.comp()) + Code.jump(parser.jump());
@@ -42,12 +84,16 @@ public class Main {
 
                     case "L_COMMAND":
 
-                        String lCommand = "";
+                        String lCommand = fillInMissingBinaries(symbolTable.getAddress(
+                                parser.getCurrentCommand().trim()));
                         writer.write(lCommand + "\n");
                         break;
 
                 }
             }
+
+            parser.closeReader();
+
         }
     }
 

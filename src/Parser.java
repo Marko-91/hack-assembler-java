@@ -27,7 +27,7 @@ public class Parser {
     }
 
     public String commandType() {
-        if (currentCommand.matches("\\s*@\\d+\\s*")) {
+        if (currentCommand.matches("\\s*@.+\\s*")) {
             return "A_COMMAND";
         }
 
@@ -67,8 +67,18 @@ public class Parser {
         return currentCommand;
     }
 
+    public void setCurrentCommand(String currentCommand) { this.currentCommand = currentCommand; }
+
     public String getFileName() {
         return fileName.replaceFirst(".asm", "");
+    }
+
+    public void closeReader() {
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
