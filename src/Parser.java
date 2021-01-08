@@ -27,11 +27,12 @@ public class Parser {
     }
 
     public String commandType() {
+        sanitizeInlineComments();
         if (currentCommand.matches("\\s*@.+\\s*")) {
             return "A_COMMAND";
         }
 
-        if (currentCommand.matches("\\s*\\([A-Za-z0-9]+\\)\\s*")) {
+        if (currentCommand.matches("\\s*\\([A-Z_a-z0-9]+\\)\\s*")) {
             return "L_COMMAND";
         }
 
@@ -39,10 +40,12 @@ public class Parser {
     }
 
     public String symbol() {
-        return currentCommand.replaceAll("@|\\(\\)", "");
+        sanitizeInlineComments();
+        return currentCommand.replaceAll("@|\\(*\\)*\\s*", "");
     }
 
     public String dest() {
+        sanitizeInlineComments();
         String pattern = "([A-Z]+(?==))";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(currentCommand);
@@ -50,13 +53,15 @@ public class Parser {
     }
 
     public String comp() {
-        String pattern = "((?<==)[-+!&|A-Z]+(?=;?))";
+        sanitizeInlineComments();
+        String pattern = "((?<==)?[-+!&|A-Z\\d]+(?=;?))";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(currentCommand);
         return (matcher.find()) ? matcher.group() : "";
     }
 
     public String jump() {
+        sanitizeInlineComments();
         String pattern = "((?<=;)[A-Z]+)";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(currentCommand);
@@ -69,8 +74,12 @@ public class Parser {
 
     public void setCurrentCommand(String currentCommand) { this.currentCommand = currentCommand; }
 
+    public void sanitizeInlineComments() {
+        this.currentCommand = currentCommand.replaceAll("//.*+", "");
+    }
+
     public String getFileName() {
-        return fileName.replaceFirst(".asm", "");
+        return fileName.replaceFirst("\\.asm", "");
     }
 
     public void closeReader() {

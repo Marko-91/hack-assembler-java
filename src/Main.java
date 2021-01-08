@@ -3,12 +3,16 @@ import java.nio.charset.StandardCharsets;
 
 public class Main {
     public static int lineCount;
-    public static int ROMAddressCount;
+    public static int ROMAddressCount = 1;
     public static int RAMAddress = 16;
 
     public static void main(String[] args) throws Exception {
-        Parser labelParser = new Parser("Add.asm");
-        Parser parser = new Parser("Add.asm");
+        if (args.length != 1 && !args[0].matches("\\.asm$")) {
+            System.out.println("Bad input.\n$ java Main fileName.asm\nThe program will now exit");
+            System.exit(1);
+        }
+        Parser labelParser = new Parser(args[0]);
+        Parser parser = new Parser(args[0]);
         SymbolTable symbolTable = new SymbolTable();
 
         // FIRST PASS
@@ -17,14 +21,15 @@ public class Main {
                 continue; // Skip comments and empty lines.
             }
 
-            if (labelParser.commandType().equals("L_COMMAND") && !symbolTable.contains(labelParser.getCurrentCommand())) {
-                String labelToAdd = labelParser.symbol().trim();
+            if (labelParser.commandType().equals("L_COMMAND") &&
+                    !symbolTable.contains(labelParser.symbol().trim())) {
+
+                String labelToAdd = labelParser.symbol();
                 symbolTable.addEntry(labelToAdd, String.valueOf(ROMAddressCount)); // Associate labels (labelName) with ROM addresses
                 continue; // Do not add labels to rom address count
             }
 
             ROMAddressCount++;
-
         }
         labelParser.closeReader();
         // SECOND PASS
@@ -39,30 +44,27 @@ public class Main {
 
                 lineCount++; // Keep track of line counts.
 
-                switch (parser.commandType()) {
+                switch (parser.commandType()) { // Determine the command type
 
                     case "A_COMMAND":
-                        if (symbolTable.contains(parser.getCurrentCommand().trim()) &&
-                                parser.getCurrentCommand().matches("\\s*@([A-Z]|[0-9])\\s*")) {
+                        if (symbolTable.contains(parser.symbol()) &&
+                                parser.symbol().matches("^[A-Za-z_]+[0-9_]*")) { // Variables can start with letter only!
 
                             String aCommand = fillInMissingBinaries(
-                                    symbolTable.getAddress(parser.getCurrentCommand().trim()));
-
+                                    symbolTable.getAddress(parser.symbol()));
                             writer.write(aCommand + "\n");
                             break;
                         }
 
-                        if (!symbolTable.contains(parser.getCurrentCommand().trim()) &&
-                                parser.getCurrentCommand().matches("\\s*@([A-Z]|[0-9])\\s*")) {
-
-                            symbolTable.addEntry(parser.getCurrentCommand().trim(), String.valueOf(RAMAddress));
-                            parser.setCurrentCommand(symbolTable.getAddress(parser.getCurrentCommand().trim()));
+                        if (!symbolTable.contains(parser.symbol()) &&
+                                parser.symbol().matches("^[A-Za-z_]+[0-9_]*")) {
+                            symbolTable.addEntry(parser.symbol(), String.valueOf(RAMAddress));
+                            parser.setCurrentCommand(symbolTable.getAddress(parser.symbol()));
                             RAMAddress++;
                             String aCommand = fillInMissingBinaries(parser.symbol());
                             writer.write(aCommand + "\n");
                             break;
                         }
-
 
                         String aCommand = fillInMissingBinaries(parser.symbol());
                         writer.write(aCommand + "\n");
@@ -80,15 +82,11 @@ public class Main {
                         }
 
                         writer.write(cCommand + "\n");
-
                         break;
 
                     case "L_COMMAND":
 
-//                        String lCommand = fillInMissingBinaries(symbolTable.getAddress(
-//                                parser.getCurrentCommand().trim()));
                         writer.write(""); // Skip L command
-//                        parser.advance();
                         break;
 
                 }
