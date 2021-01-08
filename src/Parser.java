@@ -15,9 +15,11 @@ import java.util.regex.Pattern;
 public class Parser {
     private String currentCommand;
     private final BufferedReader reader;
+    private String fileName;
 
     public Parser(String fileName) throws FileNotFoundException {
-        reader = new BufferedReader(new FileReader(fileName));
+        this.fileName = fileName;
+        reader = new BufferedReader(new FileReader(this.fileName));
     }
 
     public boolean advance() throws IOException {
@@ -63,6 +65,10 @@ public class Parser {
 
     public String getCurrentCommand() {
         return currentCommand;
+    }
+
+    public String getFileName() {
+        return fileName.replaceFirst(".asm", "");
     }
 
 }
