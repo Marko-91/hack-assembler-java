@@ -49,7 +49,7 @@ public class Main {
                                     symbolTable.getAddress(parser.getCurrentCommand().trim()));
 
                             writer.write(aCommand + "\n");
-
+                            break;
                         }
 
                         if (!symbolTable.contains(parser.getCurrentCommand().trim()) &&
@@ -60,6 +60,7 @@ public class Main {
                             RAMAddress++;
                             String aCommand = fillInMissingBinaries(parser.symbol());
                             writer.write(aCommand + "\n");
+                            break;
                         }
 
 
@@ -84,9 +85,10 @@ public class Main {
 
                     case "L_COMMAND":
 
-                        String lCommand = fillInMissingBinaries(symbolTable.getAddress(
-                                parser.getCurrentCommand().trim()));
-                        writer.write(lCommand + "\n");
+//                        String lCommand = fillInMissingBinaries(symbolTable.getAddress(
+//                                parser.getCurrentCommand().trim()));
+                        writer.write(""); // Skip L command
+//                        parser.advance();
                         break;
 
                 }
