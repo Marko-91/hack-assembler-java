@@ -32,7 +32,7 @@ public class Parser {
             return "A_COMMAND";
         }
 
-        if (currentCommand.matches("\\s*\\([A-Z_a-z0-9]+\\)\\s*")) {
+        if (currentCommand.matches("\\s*\\([A-Z_$.a-z0-9]+\\)\\s*")) {
             return "L_COMMAND";
         }
 
@@ -51,7 +51,7 @@ public class Parser {
         Matcher matcher = r.matcher(currentCommand);
         if (matcher.find()) {
             String destSymbol = matcher.group();
-            setCurrentCommand(currentCommand.replaceAll(matcher.group(), ""));
+            setCurrentCommand(currentCommand.replaceFirst(matcher.group(), ""));
             return destSymbol;
         }
         return "";

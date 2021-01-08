@@ -48,7 +48,7 @@ public class Main {
 
                     case "A_COMMAND":
                         if (symbolTable.contains(parser.symbol()) &&
-                                parser.symbol().matches("^[A-Za-z_]+[0-9_]*")) { // Variables can start with letter only!
+                                parser.symbol().matches("^[A-Za-z_.$]+[0-9_]*")) { // Variables can start with letter only!
 
                             String aCommand = fillInMissingBinaries(
                                     symbolTable.getAddress(parser.symbol()));
@@ -57,7 +57,7 @@ public class Main {
                         }
 
                         if (!symbolTable.contains(parser.symbol()) &&
-                                parser.symbol().matches("^[A-Za-z_]+[0-9_]*")) {
+                                parser.symbol().matches("^[A-Za-z_.$]+[0-9_]*")) {
                             symbolTable.addEntry(parser.symbol(), String.valueOf(RAMAddress));
                             parser.setCurrentCommand(symbolTable.getAddress(parser.symbol()));
                             RAMAddress++;
