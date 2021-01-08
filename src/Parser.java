@@ -46,15 +46,20 @@ public class Parser {
 
     public String dest() {
         sanitizeInlineComments();
-        String pattern = "([A-Z]+(?==))";
+        String pattern = "([AMD]+(?==))";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(currentCommand);
-        return (matcher.find()) ? matcher.group() : "";
+        if (matcher.find()) {
+            String destSymbol = matcher.group();
+            setCurrentCommand(currentCommand.replaceAll(matcher.group(), ""));
+            return destSymbol;
+        }
+        return "";
     }
 
     public String comp() {
         sanitizeInlineComments();
-        String pattern = "((?<==)?[-+!&|A-Z\\d]+(?=;?))";
+        String pattern = "((?<==)?[-+!&|AMD\\d]+(?=;?))";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(currentCommand);
         return (matcher.find()) ? matcher.group() : "";

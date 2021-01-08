@@ -1,10 +1,10 @@
 /**************************************************************************
  * CODE MODULE
- * Translates Hack assembly language mnemonics into binary codes.
+ * Translates Hack assembly language mnemonics into binary codes. dest=comp;jump
  **************************************************************************/
 public class Code {
     public static String dest(String mnemonics) throws Exception {
-        switch (mnemonics.toUpperCase()) {
+        switch (mnemonics) {
             case "":
                 return "000";
             case "M":
@@ -22,7 +22,7 @@ public class Code {
             case "AMD":
                 return "111";
             default:
-                throw new Exception("Syntax error << "+ mnemonics + " >> on line " + Main.lineCount + ".");
+                throw new Exception("Syntax error in destination bit \""+ mnemonics + "\" on line " + Main.lineCount + ".");
         }
     }
 
@@ -65,7 +65,7 @@ public class Code {
             case "D|A": case "D|M":
                 return "010101";
             default:
-                throw new Exception("Syntax error << "+ mnemonics + " >> on line " + Main.lineCount + ".");
+                throw new Exception("Syntax error in compute bit \""+ mnemonics + "\" on line " + Main.lineCount + ".");
         }
     }
 
@@ -88,7 +88,7 @@ public class Code {
             case "JMP":
                 return "111";
             default:
-                throw new Exception("Syntax error << "+ mnemonics + " >> on line " + Main.lineCount + ".");
+                throw new Exception("Syntax error in jump bit \""+ mnemonics + "\" on line " + Main.lineCount + ".");
         }
     }
 }
